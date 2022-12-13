@@ -1,4 +1,5 @@
 <script type="text/ecmascript-6">
+    import xmlFormatter from 'xml-formatter';
     export default {
         data() {
             return {
@@ -6,6 +7,20 @@
                 batch: [],
                 currentTab: 'payload'
             };
+        },
+        methods: {
+            formatBody(str) {
+                if (this.isXmlRequest) {
+                    return xmlFormatter(str)
+                }
+
+                return str
+            },
+        },
+        computed: {
+            isXmlRequest() {
+                return ['text/xml', 'application/xml'].includes(this.entry.content.headers.accept)
+            }
         }
     }
 </script>
@@ -85,12 +100,17 @@
                     <li class="nav-item">
                         <a class="nav-link" :class="{active: currentTab=='response'}" href="#" v-on:click.prevent="currentTab='response'">Response</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" :class="{active: currentTab=='body'}" href="#" v-on:click.prevent="currentTab='body'">Body</a>
+                    </li>
                 </ul>
                 <div class="code-bg p-4 mb-0 text-white">
                     <vue-json-pretty :data="slotProps.entry.content.payload" v-if="currentTab=='payload'"></vue-json-pretty>
                     <vue-json-pretty :data="slotProps.entry.content.headers" v-if="currentTab=='headers'"></vue-json-pretty>
                     <vue-json-pretty :data="slotProps.entry.content.session" v-if="currentTab=='session'"></vue-json-pretty>
-                    <vue-json-pretty :data="slotProps.entry.content.response" v-if="currentTab=='response'"></vue-json-pretty>
+                    <vue-json-pretty :data="slotProps.entry.content.response" v-if="currentTab=='response' && !isXmlRequest"></vue-json-pretty>
+                    <pre class="text-white" v-if="currentTab=='response' && isXmlRequest">{{ formatBody(slotProps.entry.content.response) }}</pre>
+                    <pre class="text-white" v-if="currentTab=='body'">{{ formatBody(slotProps.entry.content.body) }}</pre>
                 </div>
             </div>
 

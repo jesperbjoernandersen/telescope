@@ -52,6 +52,7 @@ class RequestWatcher extends Watcher
             'middleware' => array_values(optional($event->request->route())->gatherMiddleware() ?? []),
             'headers' => $this->headers($event->request->headers->all()),
             'payload' => $this->payload($this->input($event->request)),
+            'body' => $event->request->getContent(),
             'session' => $this->payload($this->sessionVariables($event->request)),
             'response_status' => $event->response->getStatusCode(),
             'response' => $this->response($event->response),
@@ -187,7 +188,7 @@ class RequestWatcher extends Watcher
                         : 'Purged By Telescope';
             }
 
-            if (Str::startsWith(strtolower($response->headers->get('Content-Type') ?? ''), 'text/plain')) {
+            if (Str::startsWith(strtolower($response->headers->get('Content-Type') ?? ''), ['text/plain', 'text/xml', 'application/xml'])) {
                 return $this->contentWithinLimits($content) ? $content : 'Purged By Telescope';
             }
         }
